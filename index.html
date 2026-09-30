@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Dark Web Threat Actor De-anonymization - Research Paper</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1"><style>
+  :root{color-scheme:light dark}
+  body{max-width:780px;margin:0 auto;padding:32px 20px 64px;font:17px/1.65 Georgia,"Times New Roman",serif;color:#1c1c1c;background:#fff}
+  h1,h2,h3{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.25}
+  h2{margin-top:2em;border-bottom:1px solid #ccc;padding-bottom:.2em}
+  table{border-collapse:collapse;width:100%;display:block;overflow-x:auto;font-family:system-ui,sans-serif;font-size:.9rem}
+  th,td{border:1px solid #bbb;padding:6px 10px;text-align:left}
+  th{background:#eee}
+  code{font-size:.9em}
+  @media (prefers-color-scheme:dark){body{background:#15191c;color:#e6e6e6}h2{border-color:#444}th{background:#262c30}th,td{border-color:#444}}
+  </style>
+</head>
+<body>
+<p><strong>RESEARCH PAPER</strong></p>
+<p><strong>A Privacy-Preserving Framework for Dark Web Threat Actor De-anonymization Using Blockchain and Multi-Modal Cyber Intelligence</strong></p>
+<p><strong>SIH Problem Statement: SIH26151</strong></p>
+<p><strong>Theme: Blockchain &amp; Cybersecurity</strong></p>
+<p><strong>Organization: National Technical Research Organisation (NTRO)</strong></p>
+<p>Team Leader: Padma Sri S</p>
+<p>Team Members: Karthika K N • Manuja K • Parkavi S • Kaviya Sri C</p>
+<p><em>Research Paper Draft — Editable Academic Version</em></p>
+<p><em>Important: Numerical experimental results are placeholders and must be replaced with measurements from the team's implementation and approved datasets.</em></p>
+<h1 id="abstract">Abstract</h1>
+<p>Dark-web ecosystems enable anonymous or pseudonymous communication and transactions, creating challenges for cyber-threat intelligence, digital investigation, and threat-actor attribution. A single actor may operate through multiple aliases, accounts, wallets, services, and infrastructure components, making isolated analysis insufficient for reliable correlation. This paper proposes a framework for dark-web threat actor de-anonymization that combines multi-modal cyber intelligence, entity resolution, behavioural analysis, relationship graphs, and blockchain-based evidence integrity. Blockchain is used as an integrity and provenance layer rather than as a mechanism for exposing private identities. The architecture includes intelligence acquisition, preprocessing, entity extraction, cross-source correlation, confidence estimation, evidence hashing, graph construction, and investigator visualization. The framework defines an evaluation methodology based on precision, recall, F1-score, false-positive rate, processing time, and evidence-verification success. The approach is intended to support lawful cyber investigations and analyst decision-making while reducing unsupported attribution.</p>
+<p>Keywords: Dark Web, Threat Actor Attribution, De-anonymization, Blockchain, Cyber Threat Intelligence, Entity Resolution, Digital Forensics, Evidence Integrity</p>
+<h1 id="introduction">1. Introduction</h1>
+<p>The dark web consists of services and communities that are not ordinarily indexed by conventional search engines and may be accessed through privacy-oriented networks. Although these technologies have legitimate uses, dark-web ecosystems are also associated with cybercrime, illicit marketplaces, credential trading, malware distribution, fraud, and other security threats. Investigators therefore require methods for discovering relationships among apparently unrelated online identities and technical artefacts.</p>
+<p>A central challenge is that threat actors can separate activities across pseudonyms, forums, marketplaces, cryptocurrency addresses, email identifiers, public keys, domains, servers, and other infrastructure. Individual observations may be weak signals; combinations of independent signals can provide stronger evidence for an investigative hypothesis. This motivates a multi-modal correlation approach.</p>
+<p>This work addresses SIH26151, 'Dark web threat actor de-anonymization', under the Blockchain &amp; Cybersecurity theme. The framework treats attribution as a hypothesis-generation and evidence-correlation task, not as a single automated claim of real-world identity.</p>
+<h1 id="problem-statement">2. Problem Statement</h1>
+<p>Design a system capable of assisting investigators in correlating fragmented dark-web threat intelligence to identify potentially related threat-actor identities, activities, and infrastructure, while maintaining verifiable evidence provenance and integrity.</p>
+<h2 id="research-questions">2.1 Research Questions</h2>
+<ul>
+<li><p>RQ1: Can heterogeneous dark-web intelligence be normalized into a common entity and relationship representation?</p></li>
+<li><p>RQ2: Can multi-modal correlation improve identification of related pseudonymous entities compared with isolated-source analysis?</p></li>
+<li><p>RQ3: Can blockchain-based hashing and provenance records provide verifiable evidence integrity without storing sensitive raw evidence on-chain?</p></li>
+<li><p>RQ4: How should uncertainty and false-positive risk be represented to prevent unsupported attribution?</p></li>
+</ul>
+<h1 id="objectives">3. Objectives</h1>
+<ul>
+<li><p>Develop a modular pipeline for legally obtained or approved cyber-intelligence data.</p></li>
+<li><p>Extract and normalize aliases, identifiers, domains, infrastructure references, public keys and other appropriate indicators.</p></li>
+<li><p>Correlate entities using explainable relationships and behavioural signals.</p></li>
+<li><p>Represent relationships through an intelligence graph for analyst investigation.</p></li>
+<li><p>Use cryptographic hashing and blockchain anchoring for tamper-evident evidence provenance.</p></li>
+<li><p>Evaluate the framework using approved datasets and reproducible metrics.</p></li>
+<li><p>Provide confidence indicators and supporting evidence for human review rather than an automated identity verdict.</p></li>
+</ul>
+<h1 id="related-work-and-research-gap">4. Related Work and Research Gap</h1>
+<p>Cyber-threat intelligence systems commonly use indicators of compromise, entity extraction, graph analysis, malware intelligence and reputation data. Digital-forensics systems emphasize evidence preservation and chain of custody, while blockchain systems can provide append-only records and cryptographic verification. These capabilities are often implemented separately.</p>
+<p>The proposed research integrates multi-modal dark-web intelligence correlation with an evidence-integrity layer and analyst-oriented relationship graph. It explicitly separates observed facts from inferred relationships.</p>
+<h2 id="research-gap">4.1 Research Gap</h2>
+<ul>
+<li><p>Fragmented evidence is difficult to correlate across heterogeneous sources.</p></li>
+<li><p>Naive username or keyword matching can generate false positives.</p></li>
+<li><p>Evidence provenance may be separated from the intelligence workflow.</p></li>
+<li><p>Black-box attribution can make it difficult to understand why two entities were linked.</p></li>
+<li><p>Sensitive raw evidence should not automatically be placed on a public or shared blockchain.</p></li>
+</ul>
+<h1 id="proposed-methodology">5. Proposed Methodology</h1>
+<p>The framework follows a staged architecture: data acquisition, preprocessing, entity extraction, normalization, correlation, graph construction, confidence estimation, evidence integrity, and analyst visualization.</p>
+<h2 id="data-acquisition">5.1 Data Acquisition</h2>
+<p>The prototype should operate only on data the team is authorized to collect, access or use. Controlled, synthetic, public research, or institutionally approved datasets can be used for evaluation.</p>
+<h2 id="preprocessing-and-entity-extraction">5.2 Preprocessing and Entity Extraction</h2>
+<p>Records are normalized into structured objects. Candidate entities may include pseudonyms, account identifiers, domains, public keys, wallet identifiers, timestamps, infrastructure references, and textual or behavioural features.</p>
+<h2 id="entity-resolution">5.3 Entity Resolution</h2>
+<p>Candidate entities are compared using multiple features rather than a single identifier. Exact and approximate matching, temporal overlap, shared technical indicators, linguistic similarity and infrastructure reuse can be represented as weighted relationships. Each relationship retains its supporting evidence and confidence.</p>
+<h2 id="behavioural-correlation">5.4 Behavioural Correlation</h2>
+<p>Behavioural features may include posting intervals, activity windows, vocabulary characteristics, recurring operational patterns and cross-platform timing. These are probabilistic signals and should not be interpreted as proof of a person's identity.</p>
+<h2 id="intelligence-graph">5.5 Intelligence Graph</h2>
+<p>Entities are represented as nodes and observed relationships as edges. Each edge can contain source, timestamp, evidence reference, relationship type and confidence, enabling analysts to explore clusters and bridge entities.</p>
+<h2 id="blockchain-evidence-layer">5.6 Blockchain Evidence Layer</h2>
+<p>Instead of storing raw investigative material on-chain, the framework can calculate a cryptographic hash of an evidence package and record a minimal provenance entry. The original evidence remains in controlled storage. Later, re-hashing and comparison with the recorded value can detect modification.</p>
+<h2 id="confidence-and-human-review">5.7 Confidence and Human Review</h2>
+<p>The system should distinguish observed facts from inferred relationships. A confidence score may summarize signal strength, while the interface exposes the individual supporting signals. Analysts can accept, reject or annotate relationships.</p>
+<h1 id="system-architecture">6. System Architecture</h1>
+<p><strong>Dark-Web / Approved Intelligence Sources → Data Acquisition → Preprocessing → Entity Extraction → Entity Resolution → Behavioural &amp; Technical Correlation → Intelligence Graph → Confidence &amp; Analyst Review → Blockchain Evidence Integrity → Investigator Dashboard</strong></p>
+<p>Figure 1. Proposed architecture. Replace this text representation with a polished architecture diagram in the final paper.</p>
+<h1 id="blockchain-design">7. Blockchain Design</h1>
+<p>Blockchain is positioned as an integrity and provenance mechanism. A permissioned blockchain or controlled distributed ledger may be appropriate when investigation records are shared among authorized organizations. The design should minimize on-chain data and avoid publishing sensitive raw evidence.</p>
+<h2 id="evidence-record">7.1 Evidence Record</h2>
+<ul>
+<li><p>Evidence ID</p></li>
+<li><p>Cryptographic hash of the evidence package</p></li>
+<li><p>Timestamp</p></li>
+<li><p>Source/provenance reference</p></li>
+<li><p>Investigation or case identifier</p></li>
+<li><p>Verification status</p></li>
+<li><p>Authorized analyst or system identifier, where appropriate</p></li>
+</ul>
+<h2 id="integrity-verification">7.2 Integrity Verification</h2>
+<p>At verification time, the stored evidence is hashed using the approved cryptographic function. If the calculated hash matches the recorded hash, the system can establish that the referenced artifact has not changed since the recorded integrity event. This does not independently establish that the underlying evidence is truthful.</p>
+<h1 id="threat-model-and-security-considerations">8. Threat Model and Security Considerations</h1>
+<ul>
+<li><p>Adversarial actors may create misleading identities or relationships.</p></li>
+<li><p>Public identifiers may be reused by unrelated users, creating false correlations.</p></li>
+<li><p>Collected data may be incomplete, stale, manipulated or incorrectly attributed.</p></li>
+<li><p>Analyst interfaces may expose sensitive information and require authentication, authorization and audit logging.</p></li>
+<li><p>Blockchain records are difficult to alter, so incorrect data should not be committed without validation.</p></li>
+<li><p>Automated correlation should be treated as an investigative lead unless supported by sufficient independent evidence and lawful procedures.</p></li>
+</ul>
+<h1 id="experimental-evaluation">9. Experimental Evaluation</h1>
+<p>This section must be completed using the team's actual implementation and approved evaluation data. Numerical claims should not be inserted without measurement.</p>
+<h2 id="evaluation-metrics">9.1 Evaluation Metrics</h2>
+<ul>
+<li><p>Precision: correctly resolved relationships divided by all relationships predicted.</p></li>
+<li><p>Recall: correctly resolved relationships divided by all relevant relationships in the evaluation ground truth.</p></li>
+<li><p>F1-score: harmonic mean of precision and recall.</p></li>
+<li><p>False-positive rate: incorrectly generated relationships relative to selected negative cases.</p></li>
+<li><p>Processing time: elapsed time for a defined dataset and pipeline configuration.</p></li>
+<li><p>Evidence verification success: proportion of unchanged test artifacts correctly verified after integrity recording.</p></li>
+</ul>
+<h2 id="results-table-to-be-filled">9.2 Results Table — To Be Filled</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Baseline</th>
+<th>Proposed System</th>
+<th>Observation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Precision</td>
+<td>[Measure]</td>
+<td>[Measure]</td>
+<td>[Describe]</td>
+</tr>
+<tr class="even">
+<td>Recall</td>
+<td>[Measure]</td>
+<td>[Measure]</td>
+<td>[Describe]</td>
+</tr>
+<tr class="odd">
+<td>F1-score</td>
+<td>[Measure]</td>
+<td>[Measure]</td>
+<td>[Describe]</td>
+</tr>
+<tr class="even">
+<td>False-positive rate</td>
+<td>[Measure]</td>
+<td>[Measure]</td>
+<td>[Describe]</td>
+</tr>
+<tr class="odd">
+<td>Processing time</td>
+<td>[Measure]</td>
+<td>[Measure]</td>
+<td>[Describe]</td>
+</tr>
+<tr class="even">
+<td>Evidence verification</td>
+<td>[Measure]</td>
+<td>[Measure]</td>
+<td>[Describe]</td>
+</tr>
+</tbody>
+</table>
+<h1 id="expected-contributions">10. Expected Contributions</h1>
+<ul>
+<li><p>Unified multi-modal framework for correlating dark-web threat intelligence.</p></li>
+<li><p>Explainable entity-resolution and relationship-graph model.</p></li>
+<li><p>Blockchain-backed evidence-integrity mechanism with minimal sensitive on-chain storage.</p></li>
+<li><p>Analyst-centric workflow separating observations, inferred relationships and confidence.</p></li>
+<li><p>Reproducible evaluation methodology for attribution-support capabilities.</p></li>
+</ul>
+<h1 id="limitations">11. Limitations</h1>
+<ul>
+<li><p>Dark-web data can be incomplete, transient, inaccessible or deliberately deceptive.</p></li>
+<li><p>Behavioural and linguistic similarity can produce false positives.</p></li>
+<li><p>Blockchain integrity does not guarantee the truthfulness of the underlying evidence.</p></li>
+<li><p>Automated correlation should not be treated as definitive real-world identity attribution.</p></li>
+<li><p>Evaluation quality depends on the availability and quality of ground-truth data.</p></li>
+</ul>
+<h1 id="ethical-legal-and-privacy-considerations">12. Ethical, Legal and Privacy Considerations</h1>
+<p>The research should be conducted only within applicable law, institutional authorization and approved cybersecurity research procedures. The system should minimize personal data, use controlled access, maintain audit logs and avoid unnecessary exposure of sensitive information. Real-world deployment should include legal review, human oversight and procedures for correcting erroneous correlations.</p>
+<h1 id="future-work">13. Future Work</h1>
+<ul>
+<li><p>Evaluate graph-based machine-learning methods for entity resolution.</p></li>
+<li><p>Investigate privacy-preserving collaboration between authorized organizations.</p></li>
+<li><p>Develop stronger provenance standards and permissioned-ledger integration.</p></li>
+<li><p>Add explainable visual analytics for relationship confidence.</p></li>
+<li><p>Benchmark against multiple controlled datasets and adversarial test cases.</p></li>
+<li><p>Study robustness against identity mimicry, misleading indicators and data poisoning.</p></li>
+</ul>
+<h1 id="conclusion">14. Conclusion</h1>
+<p>This paper proposes a research framework for assisting dark-web threat actor de-anonymization through multi-modal cyber intelligence correlation and blockchain-supported evidence integrity. The central principle is that de-anonymization should be treated as an evidence-correlation problem with uncertainty rather than as a single automated identity decision. Combining entity resolution, behavioural and technical signals, intelligence graphs, confidence-aware analysis and tamper-evident provenance can provide investigators with a structured basis for reviewing potential relationships. Experimental validation should quantify precision, recall, false-positive behaviour, computational cost and evidence-verification performance using authorized datasets.</p>
+<h1 id="references-initial-reading-list">References — Initial Reading List</h1>
+<ul>
+<li><p>European Union Agency for Cybersecurity (ENISA), guidance and reports on cyber threat intelligence and incident response.</p></li>
+<li><p>National Institute of Standards and Technology (NIST), guidance on digital forensics, cybersecurity and blockchain-related technologies.</p></li>
+<li><p>ISO/IEC 27037, Guidelines for identification, collection, acquisition and preservation of digital evidence.</p></li>
+<li><p>ISO/IEC 27042, Guidelines for the analysis and interpretation of digital evidence.</p></li>
+<li><p>Tor Project, technical documentation describing the Tor network and onion services.</p></li>
+<li><p>Academic literature on entity resolution, authorship attribution, graph-based threat intelligence and cyber attribution should be added after a systematic literature search.</p></li>
+</ul>
+<h1 id="appendix-a-suggested-figures">Appendix A — Suggested Figures</h1>
+<ul>
+<li><p>Figure 1: End-to-end system architecture.</p></li>
+<li><p>Figure 2: Threat-actor intelligence graph.</p></li>
+<li><p>Figure 3: Entity-resolution workflow.</p></li>
+<li><p>Figure 4: Blockchain evidence-provenance workflow.</p></li>
+<li><p>Figure 5: Investigator dashboard.</p></li>
+<li><p>Figure 6: Experimental precision/recall comparison.</p></li>
+<li><p>Figure 7: Evidence verification test results.</p></li>
+</ul>
+</body>
+</html>
